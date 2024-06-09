@@ -161,17 +161,21 @@ typedef struct FeMem {
         FeRegGP idx;
     //     FeRegXMM idx_xmm;
     // };
-    int32_t off;
+    int32_t* off;
+
+    unsigned curoff;
 } FeMem;
-#define FE_MEM(base,sc,idx,off) (FE_STRUCT(FeMem) { 0, base, sc, idx, off })
+#define FE_MEM(base,sc,idx,off,curoff) (FE_STRUCT(FeMem) { 0, base, sc, idx, off, curoff })
 typedef struct FeMemV {
     uint8_t flags;
     FeRegGP base;
     unsigned char scale;
     FeRegXMM idx;
-    int32_t off;
+    int32_t* off;
+
+    unsigned curoff;
 } FeMemV;
-#define FE_MEMV(base,sc,idx,off) (FE_STRUCT(FeMemV) { 0, base, sc, idx, off })
+#define FE_MEMV(base,sc,idx,off,curoff) (FE_STRUCT(FeMemV) { 0, base, sc, idx, off, curoff})
 
 // NOP is special: flags is interpreted as the length in bytes, 0 = 1 byte, too.
 unsigned fe64_NOP(uint8_t* buf, unsigned flags);

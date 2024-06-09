@@ -816,9 +816,9 @@ def encode_mnems(entries):
             mnem_name = {"MOVABS": "MOV", "XCHG_NOP": "XCHG"}.get(desc.mnemonic, desc.mnemonic)
             name = prefix[0] + mnem_name
             if prepend_opsize and not ("D64" in desc.flags and opsize == 64):
-                name += f"_{opsize}"[name[-1] not in "0123456789":]
+                name += f"_{opsize}"
             if prepend_vecsize:
-                name += f"_{vecsize}"[name[-1] not in "0123456789":]
+                name += f"_{vecsize}"
             for ot, op in zip(ots, desc.operands):
                 name += ot.replace("o", "")
                 if separate_opsize:
@@ -922,11 +922,11 @@ def encode2_table(entries, args):
 
         fnname = f"fe64_{mnem}{'_impl' if supports_high_regs else ''}"
         op_tys = [{
-            "i": f"int{max_imm_size*8 if max_imm_size != 3 else 32}_t",
-            "a": "uintptr_t",
+            "i": f"int{max_imm_size*8 if max_imm_size != 3 else 32}_t*",
+            "a": "uintptr_t*",
             "r": f"FeReg{reg_ty if i not in supports_high_regs else 'GPLH'}",
             "m": "FeMem" if not supports_vsib else "FeMemV",
-            "o": "const void*",
+            "o": "uint8_t**",
         }[ot] for i, (ot, reg_ty) in enumerate(zip(ots, reg_tys))]
         fn_opargs = "".join(f", {ty} op{i}" for i, ty in enumerate(op_tys))
         fn_sig = f"unsigned {fnname}(uint8_t* buf, int flags{fn_opargs})"
@@ -968,8 +968,11 @@ def encode2_table(entries, args):
                 code += f"  if (op_reg_idx(op{flags.vexreg_idx^3})!={flags.zeroreg_val}) goto next{i};\n"
                 neednext = True
             if flags.imm_control:
+                # if "a" in ots:
+                #     code += f"  imm = (int64_t) *op{flags.imm_idx^3};\n"
+                # elif flags.imm_control != 3:
                 if flags.imm_control != 3:
-                    code += f"  imm = (int64_t) op{flags.imm_idx^3};\n"
+                    code += f"  imm = (int64_t) *op{flags.imm_idx^3};\n"
                 else:
                     code += f"  imm = op_reg_idx(op{flags.imm_idx^3}) << 4;\n"
                 code += f"  imm_size = {imm_size};\n"
@@ -1087,6 +1090,10 @@ def encode2_table(entries, args):
                 if flags.imm_control == 6:
                     code += f"  imm -= idx;\n"
                 code += f"  if (enc_imm(buf+idx, imm, imm_size)) return 0;\n"
+                if flags.imm_control == 6:
+                    code += f"  *op{flags.imm_idx^3} = buf + idx;\n"
+                elif flags.imm_control != 3:
+                    code += f"  *op{flags.imm_idx^3} = (uint32_t) idx;\n"
                 code += f"  idx += imm_size;\n"
             code += f"  return idx;\n"
 

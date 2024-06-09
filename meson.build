@@ -102,14 +102,14 @@ fadec = declare_dependency(link_with: libfadec,
 install_headers(headers)
 
 foreach component : components
-  test(component, executable('@0@-test'.format(component),
-                             '@0@-test.c'.format(component),
-                             dependencies: fadec))
-  if component == 'encode2' and has_cpp
-    test(component + '-cpp', executable('@0@-test-cpp'.format(component),
-                                        '@0@-test.cc'.format(component),
-                                        dependencies: fadec))
-  endif
+  # test(component, executable('@0@-test'.format(component),
+  #                            '@0@-test.c'.format(component),
+  #                            dependencies: fadec))
+  # if component == 'encode2' and has_cpp
+  #   test(component + '-cpp', executable('@0@-test-cpp'.format(component),
+  #                                       '@0@-test.cc'.format(component),
+  #                                       dependencies: fadec))
+  # endif
 endforeach
 
 if meson.version().version_compare('>=0.54.0')

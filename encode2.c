@@ -46,7 +46,7 @@ enc_mem_common(uint8_t* restrict buf, unsigned bufidx, FeMem op0, uint64_t op1,
     int scale = 0, idx = 4, base = 0;
     bool withsib = false, mod0off = false;
     unsigned dispsz = 0;
-    int32_t off = op0.off;
+    int32_t off = *op0.off;
 
     if (sibidx < 8) {
         idx = sibidx;
@@ -91,6 +91,7 @@ enc_mem_common(uint8_t* restrict buf, unsigned bufidx, FeMem op0, uint64_t op1,
     buf[bufidx++] = (mod << 6) | (reg << 3) | rm;
     if (mod != 3 && rm == 4)
         buf[bufidx++] = (scale << 6) | (idx << 3) | base;
+    *op0.off = bufidx;
     if (enc_imm(buf + bufidx, off, dispsz))
         return 0;
     return 1 + (mod != 3 && rm == 4) + dispsz;
@@ -116,7 +117,7 @@ enc_mem_vsib(uint8_t* restrict buf, unsigned bufidx, FeMemV op0, uint64_t op1,
     (void) forcesib;
     if (!op0.scale)
         return 0;
-    FeMem mem = FE_MEM(op0.base, op0.scale, FE_NOREG, op0.off);
+    FeMem mem = FE_MEM(op0.base, op0.scale, FE_NOREG, op0.off, bufidx);
     return enc_mem_common(buf, bufidx, mem, op1, immsz, op_reg_idx(op0.idx) & 7);
 }
 
