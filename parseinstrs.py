@@ -922,7 +922,7 @@ def encode2_table(entries, args):
 
         fnname = f"fe64_{mnem}"
         op_tys = [{
-            "i": f"int{max_imm_size*8 if max_imm_size != 3 else 32}_t*",
+            "i": f"uint{max_imm_size*8 if max_imm_size != 3 else 32}_t*",
             "a": "uintptr_t*",
             "r": f"FeReg{reg_ty if i not in supports_high_regs else 'GPLH'}",
             "m": "FeMem" if not supports_vsib else "FeMemV",
