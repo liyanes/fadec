@@ -920,7 +920,7 @@ def encode2_table(entries, args):
         OPKIND_LUT = {"FPU": "ST", "SEG": "SREG", "MMX": "MM"}
         reg_tys = [OPKIND_LUT.get(op.kind, op.kind) for op in variants[0][1].operands]
 
-        fnname = f"fe64_{mnem}{'_impl' if supports_high_regs else ''}"
+        fnname = f"fe64_{mnem}"
         op_tys = [{
             "i": f"int{max_imm_size*8 if max_imm_size != 3 else 32}_t*",
             "a": "uintptr_t*",
@@ -931,12 +931,12 @@ def encode2_table(entries, args):
         fn_opargs = "".join(f", {ty} op{i}" for i, ty in enumerate(op_tys))
         fn_sig = f"unsigned {fnname}(uint8_t* buf, int flags{fn_opargs})"
         enc_decls += f"{fn_sig};\n"
-        if supports_high_regs:
-            enc_decls += f"#define fe64_{mnem}(buf, flags"
-            enc_decls += "".join(f", op{i}" for i in range(len(op_tys)))
-            enc_decls += f") {fnname}(buf, flags"
-            enc_decls += "".join(f", FE_MAKE_GPLH(op{i})" if i in supports_high_regs else f", op{i}" for i in range(len(op_tys)))
-            enc_decls += f")\n"
+        # if supports_high_regs:
+        #     enc_decls += f"#define fe64_{mnem}(buf, flags"
+        #     enc_decls += "".join(f", op{i}" for i in range(len(op_tys)))
+        #     enc_decls += f") {fnname}(buf, flags"
+        #     enc_decls += "".join(f", FE_MAKE_GPLH(op{i})" if i in supports_high_regs else f", op{i}" for i in range(len(op_tys)))
+        #     enc_decls += f")\n"
 
         code = f"{fn_sig} {{\n"
 
